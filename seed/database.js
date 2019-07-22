@@ -23,8 +23,8 @@ class Database {
     return this.context
       .retrieveValue(`
         SELECT EXISTS (
-          SELECT 1 
-          FROM sqlite_master 
+          SELECT 1
+          FROM sqlite_master
           WHERE type = 'table' AND name = ?
         );
       `, tableName);
@@ -97,13 +97,13 @@ class Database {
 
     await this.context.execute(`
       CREATE TABLE Users (
-        id INTEGER PRIMARY KEY AUTOINCREMENT, 
-        firstName VARCHAR(255) NOT NULL DEFAULT '', 
-        lastName VARCHAR(255) NOT NULL DEFAULT '', 
-        emailAddress VARCHAR(255) NOT NULL DEFAULT '' UNIQUE, 
-        password VARCHAR(255) NOT NULL DEFAULT '', 
-        createdAt DATETIME NOT NULL, 
-        updatedAt DATETIME NOT NULL
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        firstName VARCHAR(255) NOT NULL DEFAULT '',
+        lastName VARCHAR(255) NOT NULL DEFAULT '',
+        emailAddress VARCHAR(255) NOT NULL DEFAULT '' UNIQUE,
+        password VARCHAR(255) NOT NULL DEFAULT '',
+        createdAt DATETIME NULL,
+        updatedAt DATETIME NULL
       );
     `);
 
@@ -129,14 +129,14 @@ class Database {
 
     await this.context.execute(`
       CREATE TABLE Courses (
-        id INTEGER PRIMARY KEY AUTOINCREMENT, 
-        title VARCHAR(255) NOT NULL DEFAULT '', 
-        description TEXT NOT NULL DEFAULT '', 
-        estimatedTime VARCHAR(255), 
-        materialsNeeded VARCHAR(255), 
-        createdAt DATETIME NOT NULL, 
-        updatedAt DATETIME NOT NULL, 
-        userId INTEGER NOT NULL DEFAULT -1 
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        title VARCHAR(255) NOT NULL DEFAULT '',
+        description TEXT NOT NULL DEFAULT '',
+        estimatedTime VARCHAR(255),
+        materialsNeeded VARCHAR(255),
+        createdAt DATETIME NULL,
+        updatedAt DATETIME NULL,
+        userId INTEGER NOT NULL DEFAULT -1
           REFERENCES Users (id) ON DELETE CASCADE ON UPDATE CASCADE
       );
     `);

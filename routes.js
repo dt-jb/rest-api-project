@@ -35,19 +35,26 @@ router.get('/courses/:id', (req, res) => {
 //POST /api/courses 201 - Creates a course, sets the Location header to the URI for the course, and returns no content
 router.post('/courses', (req, res) => {
   Course.create(req.body).then(() => {
-    res.redirect("/");
+    console.log(req.body);
+    // Get the user from the request body.
+    //const user = req.body;
+    // Add the user to the `users` array.
+    //users.push(user);
+    // Set the status to 201 Created and end the response.
+    res.status(201).json(req.body).end();
   }).catch( err => {
     if(err.name === "SequelizeValidationError"){
-      res.render('books/update-book', {
+      /*res.render('books/update-book', {
         book: Book.build(req.body),
         title: "Edit book",
         errors: err.errors
-      });
+      });*/
+      console.log(err);
     } else {
       throw err;
     }
   }).catch( err => {
-    res.render('error', err);
+    res.status(400).json(err);
   });
 });
 
@@ -57,8 +64,14 @@ router.put('/courses/:id', (req, res) => {
 });
 
 //DELETE /api/courses/:id 204 - Deletes a course and returns no content
-router.delete('/courses', (req, res) => {
-
+router.delete('/courses/:id', (req, res) => {
+  Course.findByPk(req.params.id).then( course => {
+    if(course){
+      return course.destroy();
+    } else {
+      //res.render('books/page-not-found');
+    }
+  })
 });
 
 
