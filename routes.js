@@ -25,9 +25,13 @@ const authenticateUser = (req, res, next) => {
     // by their username (i.e. the user's "key"
     // from the Authorization header).
     //const user = users.find(u => u.username === credentials.name);
-    const user = User.findAll().then( person => {
-      person.username === credentials.name;
-    });
+
+    //FIX this line!!
+
+    const user = User.findByPk(credentials.name);/*
+    const user = User.findByPk(req.body.name).then( person => {
+      person.emailAddress === credentials.name;
+    });*/
     console.log(user);
     // If a user was successfully retrieved from the data store...
     if (user) {
