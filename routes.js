@@ -14,7 +14,7 @@ const auth = require('basic-auth');
 router.use(bodyParser.json());
 router.use(bodyParser.urlencoded({ extended: false }));
 
-const authenticateUser = (req, res, next) => {
+const authenticateUser = async (req, res, next) => {
   let message = null;
   // Parse the user's credentials from the Authorization header.
   const credentials = auth(req);
@@ -24,15 +24,7 @@ const authenticateUser = (req, res, next) => {
     // Attempt to retrieve the user from the data store
     // by their username (i.e. the user's "key"
     // from the Authorization header).
-    //const user = users.find(u => u.username === credentials.name);
-
-    //FIX this line!!
-
-    const user = User.findByPk(credentials.name);/*
-    const user = User.findByPk(req.body.name).then( person => {
-      person.emailAddress === credentials.name;
-    });*/
-    console.log(user);
+    const user = await User.findOne({ where: {emailAddress: credentials.name} });
     // If a user was successfully retrieved from the data store...
     if (user) {
       // Use the bcryptjs npm package to compare the user's password
@@ -40,7 +32,7 @@ const authenticateUser = (req, res, next) => {
       // that was retrieved from the data store.
       const authenticated = bcryptjs
         .compareSync(credentials.pass, user.password);
-
+      console.log(authenticated, credentials.pass, user.password);
       // If the passwords match...
       if (authenticated) {
         // Then store the retrieved user object on the request object
@@ -73,28 +65,12 @@ const authenticateUser = (req, res, next) => {
 //Set up the following routes (listed in the format HTTP METHOD Route HTTP Status Code):
 //GET /api/users 200 - Returns the currently authenticated user
 router.get('/users', authenticateUser, (req, res) => {
-  const user = req.currentUser;
-
-  res.json({
-    name: user.name,
-    username: user.username,
+  console.log(req.currentUser)
+  res.status(200).json({
+    name: req.currentUser.firstName ,
+    username: req.currentUser.emailAddress,
   });
 });
-/*
-router.get('/users', authenticateUser, (req, res) => {
-  User.findAll().then( user => {
-    const user = req.currentUser;
-
-    res.json({
-      name: user.name,
-      username: user.username,
-    });
-  }).catch( err => {
-      res.status(400).json(err);
-  });
-});
-*/
-
 
 //POST /api/users 201 - Creates a user, sets the Location header to "/", and returns no content
 router.post('/users', (req, res) => {
@@ -104,11 +80,6 @@ router.post('/users', (req, res) => {
     res.status(201).json(req.body).end();
   }).catch( err => {
     if(err.name === "SequelizeValidationError"){
-      /*res.render('books/update-book', {
-        book: Book.build(req.body),
-        title: "Edit book",
-        errors: err.errors
-      });*/
       console.log(err);
     } else {
       throw err;
@@ -140,10 +111,10 @@ router.get('/courses/:id', (req, res) => {
 });
 
 //POST /api/courses 201 - Creates a course, sets the Location header to the URI for the course, and returns no content
-router.post('/courses', (req, res) => {
+router.post('/courses', authenticateUser, (req, res) => {
   Course.create(req.body).then(() => {
     console.log(req.body);
-    res.status(201).json(req.body).end();
+    res.status(201).json(req.body).location('/').end();
   }).catch( err => {
     if(err.name === "SequelizeValidationError"){
       console.log(err);
@@ -156,7 +127,7 @@ router.post('/courses', (req, res) => {
 });
 
 //PUT /api/courses/:id 204 - Updates a course and returns no content
-router.put('/courses/:id', (req, res) => {
+router.put('/courses/:id', authenticateUser, (req, res) => {
   Course.update(
     req.body,
     {where: {id: req.params.id}}
@@ -176,7 +147,7 @@ router.put('/courses/:id', (req, res) => {
 });
 
 //DELETE /api/courses/:id 204 - Deletes a course and returns no content
-router.delete('/courses/:id', (req, res) => {
+router.delete('/courses/:id', authenticateUser, (req, res) => {
   Course.findByPk(req.params.id).then( course => {
       if(course){
         return course.destroy();
@@ -187,7 +158,5 @@ router.delete('/courses/:id', (req, res) => {
       res.status(204).end();
   });
 });
-
-
 
 module.exports = router;
