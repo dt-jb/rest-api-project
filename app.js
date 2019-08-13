@@ -6,12 +6,6 @@ const morgan = require('morgan');
 const Sequelize = require('sequelize');
 const sequelize = require("./models").sequelize;
 const routes = require('./routes');
-/*
-const sequelize = new Sequelize({
-  dialect: 'sqlite',
-  storage: './fsjstd-restapi.db'
-});
-*/
 
 // variable to enable global error logging
 const enableGlobalErrorLogging = process.env.ENABLE_GLOBAL_ERROR_LOGGING === 'true';
