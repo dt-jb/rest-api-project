@@ -71,7 +71,11 @@ router.get('/users', authenticateUser, (req, res) => {
     username: req.currentUser.emailAddress,
   });
 });
+/*Model.findAll({
+  attributes: { exclude: ['baz'] }
+});
 
+*/
 //POST /api/users 201 - Creates a user, sets the Location header to "/", and returns no content
 router.post('/users', (req, res) => {
   req.body.password = bcryptjs.hashSync(req.body.password);
@@ -80,7 +84,7 @@ router.post('/users', (req, res) => {
     res.status(201).json(req.body).end();
   }).catch( err => {
     if(err.name === "SequelizeValidationError"){
-      console.log(err);
+      res.status(400).json(err);
     } else {
       throw err;
     }
@@ -92,7 +96,9 @@ router.post('/users', (req, res) => {
 //Set up the following routes (listed in the format HTTP METHOD Route HTTP Status Code)
 //GET /api/courses 200 - Returns a list of courses (including the user that owns each course)
 router.get('/courses', (req, res) => {
-  Course.findAll().then(courses => {
+  Course.findAll({
+    attributes: { exclude: ['createdAt', 'updatedAt'] }
+  }).then(courses => {
     res.json(courses);
   }).catch( err => {
     res.render('error', err);
@@ -101,7 +107,9 @@ router.get('/courses', (req, res) => {
 
 //GET /api/courses/:id 200 - Returns a the course (including the user that owns the course) for the provided course ID
 router.get('/courses/:id', (req, res) => {
-  Course.findByPk(req.params.id).then(courses => {
+  Course.findByPk(req.params.id, {
+    attributes: { exclude: ['createdAt', 'updatedAt'] }
+  }).then(courses => {
     if(courses){
       res.status(200).json(courses);
     } else {
@@ -117,7 +125,7 @@ router.post('/courses', authenticateUser, (req, res) => {
     res.status(201).json(req.body).location('/').end();
   }).catch( err => {
     if(err.name === "SequelizeValidationError"){
-      console.log(err);
+      res.status(400).json(err);
     } else {
       throw err;
     }
@@ -126,27 +134,76 @@ router.post('/courses', authenticateUser, (req, res) => {
   });
 });
 
+
 //PUT /api/courses/:id 204 - Updates a course and returns no content
+
 router.put('/courses/:id', authenticateUser, (req, res) => {
+  Course.findByPk(req.params.id).then( course => {
+    if(course.userId === req.currentUser.id){
+      course.update(req.body);
+    } else {
+      res.status(403).json("Users are not allowed to edit courses other than their own.").end();
+    }
+}).then(() => {
+    console.log(req.body);
+    res.status(204).json(req.body).end();
+  }).catch( err => {
+    if(err.name === "SequelizeValidationError"){
+      res.status(400).json(err);
+    } else {
+      throw err;
+    }
+  }).catch( err => {
+    res.status(400).json(err);
+  });
+});
+/*
+*/
+/*
+router.put('/courses/:id', authenticateUser, (req, res) => {
+  console.log(`${req.currentUser.id} is the id of the current user.`);
   Course.update(
     req.body,
-    {where: {id: req.params.id}}
+    {
+      where: {
+        id: req.params.id,
+        userId: req.currentUser.id
+      }
+    }
   )
   .then(() => {
     console.log(req.body);
     res.status(204).json(req.body).end();
   }).catch( err => {
     if(err.name === "SequelizeValidationError"){
-      console.log(err);
+      res.status(400).json(err);
     } else {
       throw err;
     }
   }).catch( err => {
     res.status(400).json(err);
   });
-});
+});*/
 
 //DELETE /api/courses/:id 204 - Deletes a course and returns no content
+router.delete('/courses/:id', authenticateUser, (req, res) => {
+  Course.findByPk(req.params.id).then( course => {
+      /*if(course){
+        return course.destroy();
+      } else {
+        //res.render('books/page-not-found');
+      }*/
+      if(course && course.userId === req.currentUser.id){
+        return course.destroy();
+      } else {
+        res.status(403).json("Users are not allowed to delete courses other than their own.").end();
+      }
+    }).then(()=>{
+      res.status(204).end();
+  });
+});
+
+/*
 router.delete('/courses/:id', authenticateUser, (req, res) => {
   Course.findByPk(req.params.id).then( course => {
       if(course){
@@ -157,6 +214,6 @@ router.delete('/courses/:id', authenticateUser, (req, res) => {
     }).then(()=>{
       res.status(204).end();
   });
-});
+});*/
 
 module.exports = router;
