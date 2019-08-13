@@ -81,7 +81,7 @@ router.post('/users', (req, res) => {
   req.body.password = bcryptjs.hashSync(req.body.password);
   User.create(req.body).then(() => {
     // Set the status to 201 Created and end the response.
-    res.status(201).json(req.body).end();
+    res.location('/').status(201).json(req.body).end();
   }).catch( err => {
     if(err.name === "SequelizeValidationError"){
       res.status(400).json(err);
@@ -120,9 +120,9 @@ router.get('/courses/:id', (req, res) => {
 
 //POST /api/courses 201 - Creates a course, sets the Location header to the URI for the course, and returns no content
 router.post('/courses', authenticateUser, (req, res) => {
-  Course.create(req.body).then(() => {
-    console.log(req.body);
-    res.status(201).json(req.body).location('/').end();
+  Course.create(req.body).then( course => {
+    //console.log(req.body.id);
+    res.location(`/courses/:${course.id}`).status(201).json(req.body).end();
   }).catch( err => {
     if(err.name === "SequelizeValidationError"){
       res.status(400).json(err);

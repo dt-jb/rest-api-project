@@ -29,7 +29,7 @@ app.use('/api', routes);
 sequelize
   .authenticate()
   .then(() => {
-    console.log('Successfully connected to the database, yeet!');
+    console.log('Successfully connected to the database!');
 
     return sequelize.sync();
   });
