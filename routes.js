@@ -62,7 +62,7 @@ router.post('/users', (req, res) => {
   req.body.password = bcryptjs.hashSync(req.body.password);
   User.create(req.body).then(() => {
     // Set the status to 201 Created and end the response.
-    res.location('/').status(201).json(req.body).end();
+    res.location('/').status(201).end();
   }).catch( err => {
     if(err.name === "SequelizeValidationError"){
       res.status(400).json(err);
@@ -103,7 +103,7 @@ router.get('/courses/:id', (req, res) => {
 router.post('/courses', authenticateUser, (req, res) => {
   Course.create(req.body).then( course => {
     //console.log(req.body.id);
-    res.location(`/courses/:${course.id}`).status(201).json(req.body).end();
+    res.location(`/courses/${course.id}`).status(201).end();
   }).catch( err => {
     if(err.name === "SequelizeValidationError"){
       res.status(400).json(err);
@@ -121,13 +121,14 @@ router.put('/courses/:id', authenticateUser, (req, res) => {
   Course.findByPk(req.params.id).then( course => {
     if(course.userId === req.currentUser.id){
       course.update(req.body);
+      res.status(204).json(req.body).end();
     } else {
       res.status(403).json("Users are not allowed to edit courses other than their own.").end();
     }
-}).then(() => {
+})/*.then(() => {
     //console.log(req.body);
-    res.status(204).json(req.body).end();
-  }).catch( err => {
+    //res.status(204).json(req.body).end();
+  })*/.catch( err => {
     if(err.name === "SequelizeValidationError"){
       res.status(400).json(err);
     } else {
