@@ -59,6 +59,13 @@ router.get('/users', authenticateUser, (req, res) => {
 
 //POST /api/users 201 - Creates a user, sets the Location header to "/", and returns no content
 router.post('/users', (req, res) => {
+  if (JSON.stringify(req.body) === '{}') {
+    console.log('req body is empty object');
+    const err = new Error;
+    err.status = 400;
+    err.message = 'No empty objects'
+    throw err;
+  }
   req.body.password = bcryptjs.hashSync(req.body.password);
   User.create(req.body).then(() => {
     // Set the status to 201 Created and end the response.
@@ -118,16 +125,23 @@ router.post('/courses', authenticateUser, (req, res) => {
 
 //PUT /api/courses/:id 204 - Updates a course and returns no content
 router.put('/courses/:id', authenticateUser, (req, res) => {
+  if (JSON.stringify(req.body) === '{}') {
+    console.log('req body is empty object');
+    const err = new Error;
+    err.status = 400;
+    err.message = 'No empty objects'
+    throw err;
+  }
   Course.findByPk(req.params.id).then( course => {
     if(course.userId === req.currentUser.id){
       course.update(req.body);
-      res.status(204).json(req.body).end();
+      res.status(204).end();
     } else {
       res.status(403).json("Users are not allowed to edit courses other than their own.").end();
     }
 })/*.then(() => {
     //console.log(req.body);
-    //res.status(204).json(req.body).end();
+    res.status(204).end();
   })*/.catch( err => {
     if(err.name === "SequelizeValidationError"){
       res.status(400).json(err);

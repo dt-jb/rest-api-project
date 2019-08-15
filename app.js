@@ -24,9 +24,12 @@ sequelize
   .authenticate()
   .then(() => {
     console.log('Successfully connected to the database!');
-
     return sequelize.sync();
+  }).catch( err => {
+    console.log('Problem connecting to the database!');
+    throw err;
   });
+
 app.get('/', (req, res) => {
   res.json({
     message: 'Welcome to the REST API project!',
